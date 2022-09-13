@@ -1,0 +1,35 @@
+[project]
+name = "SEU_Lecture_Monitor"
+version = "0.1.0"
+description = "东南大学讲座检查"
+authors = [
+    { name = "ZiyuZ", email = "19648091+ZiyuZ@users.noreply.github.com" },
+]
+dependencies = [
+    "requests~=2.23.0",
+    "js2py>=0.71",
+    "pyquery>=1.4.3",
+    "environs>=9.5.0",
+    "rich>=12.5.1",
+]
+requires-python = ">=3.7"
+license = { text = "MIT" }
+[project.optional-dependencies]
+
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
+
+
+[tool]
+[tool.pdm]
+[[tool.pdm.source]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+verify_ssl = true
+name = "pypi"
+[tool.pdm.scripts]
+lecture = 'python ./src/lecture.py'
+web = 'python ./src/call_browser.py'
+
+[tool.pdm.dev-dependencies]
+dev = []

@@ -1,0 +1,10 @@
+test
+__pycache__
+*.pyc
+build
+dist
+*.spec
+readme.assets
+.venv
+.env
+.pdm.toml
