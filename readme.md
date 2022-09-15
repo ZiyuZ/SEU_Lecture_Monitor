@@ -19,6 +19,19 @@
         3. 如果有想要选取的讲座，执行 `python ./src/call_browser.py` 将打开浏览器并跳转到讲座网页，可能需要登录
 4. 或者复制执行结果底部提供的链接并在浏览器中访问
 
+
+
+你可以在你的 shell profile 中设置 alias 以便快捷访问, 例如 Powershell:
+
+```powershell
+function slm {
+  $cur = Get-Location
+  cd <SEU_Lecture_Monitor_Path>
+  pdm run lecture
+  cd $cur
+}
+```
+
 ## 截图
 
 - 登陆失败时
