@@ -1,7 +1,10 @@
 from pathlib import Path
 from typing import Tuple
 
-import js2py
+try:
+    import js2py
+except SyntaxWarning:
+    pass
 import requests
 from pyquery import PyQuery as pq
 
