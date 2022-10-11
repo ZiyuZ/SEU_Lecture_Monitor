@@ -29,7 +29,7 @@ def render_table(lectures: list):
     table = Table(show_header=True, header_style="bold magenta")
     for column in C.Table.columns:
         table.add_column(column, justify="center")
-    for lecture in lectures:
+    for lecture in lectures[::-1]:
         table.add_row(*list(lecture[lc] for lc in C.Table.lecture_column))
 
     console.print(table)
