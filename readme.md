@@ -13,13 +13,17 @@
         1. 安装依赖：`pdm install`
         2. 在目录下执行 `pdm run lecture`
         3. 如果有想要选取的讲座，执行 `pdm run web` 将打开浏览器并跳转到讲座网页，可能需要登录
+        4. 如果想定时检查是否有可用的讲座 (可预约且有名额), 执行 `pdm run lecture -r -i <检查间隔> -t <检查次数>`, 此时如果有可用讲座将自动打开浏览器
     - 使用 pip/conda/mamba：
         1. 使用你的包管理器安装依赖：`pip install requests js2py pyquery environs rich`
         2. 在目录下执行 `python ./src/lecture.py`
         3. 如果有想要选取的讲座，执行 `python ./src/call_browser.py` 将打开浏览器并跳转到讲座网页，可能需要登录
+        4. 如果想定时检查是否有可用的讲座 (可预约且有名额), 执行 `python ./src/lecture.py -r -i <检查间隔> -t <检查次数>`, 此时如果有可用讲座将自动打开浏览器
 4. 或者复制执行结果底部提供的链接并在浏览器中访问
 
+*注意: SEU Lecture Monitor 使用了一些 emoji 符号用于展示信息, 你可能需要使用支持 emoji 的终端模拟器与字体.*
 
+*不想每次打开浏览器都登录: 使用支持多标签页的浏览器, 登陆后不要关闭浏览器, 这样会保留登录状态, 下次打开时会直接跳转到讲座页面.*
 
 你可以在你的 shell profile 中设置 alias 以便快捷访问, 例如 Powershell:
 
@@ -27,7 +31,7 @@
 function slm {
   $cur = Get-Location
   cd <SEU_Lecture_Monitor_Path>
-  pdm run lecture
+  pdm run lecture $args
   cd $cur
 }
 ```
@@ -40,15 +44,19 @@ function slm {
 
 - 成功获取到讲座
 
-![image-20220913200211824](assets/image-20220913200211824.png)
+![image-20221011214755671](assets/image-20221011214755671.png)
 
 - 没有获取到讲座
 
 ![image-20220913200257811](assets/image-20220913200257811.png)
 
+- 定时获取讲座
+
+![image-20221011214711215](assets/image-20221011214711215.png)
+
 ## 声明
 
-**⚠️项目是出于学习目的编写的，仅能获取讲座状态，不具备预约讲座功能⚠️**
+**⚠️项目是出于学习目的编写的，仅能获取讲座状态，不具备也没有计划实现预约讲座功能⚠️**
 
 ## 特别感谢
 
