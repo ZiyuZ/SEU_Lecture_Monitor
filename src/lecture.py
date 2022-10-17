@@ -1,4 +1,6 @@
 import argparse
+from asyncio.log import logger
+import sys
 import time
 from typing import List, Tuple
 
@@ -10,6 +12,8 @@ from call_browser import call_browser
 from config import Config as C
 from login import login_ehall
 
+LC = C.Table.LectureColumns
+
 
 def fetch_lecture_list(session: requests.Session) -> Tuple[List, int]:
     res = session.get(C.URLs.lecture_list)
@@ -17,16 +21,24 @@ def fetch_lecture_list(session: requests.Session) -> Tuple[List, int]:
     available_lectures = 0  # 可用讲座数量
     # 过滤多余内容
     for lecture in lectures:
-        lecture["JZXL_DISPLAY"] = lecture["JZXL_DISPLAY"].replace("人文与科学素养系列讲座_", "")
-        lecture["HDZRS"] = int(lecture["HDZRS"])
-        if lecture["SFKSYY"] == 0:
-            lecture["SFKSYY"] = "🔒"  # "❌"
-        elif lecture["YYRS"] < lecture["HDZRS"]:
-            lecture["SFKSYY"] = "✔"
-            available_lectures += 1
+        # 清理多余文字
+        lecture[LC.Type.value] = lecture[LC.Type.value].replace("人文与科学素养系列讲座_", "")
+        lecture[LC.Name.value] = str(lecture[LC.Name.value]).split("】", maxsplit=1)[1]
+        # 转换格式
+        seats = int(lecture[LC.SeatNum()])
+        # 去掉年和秒
+        lecture[LC.ReserveTime.value] = lecture[LC.ReserveTime.value][5:-3]
+        lecture[LC.LectureTime.value] = lecture[LC.LectureTime.value][5:-3]
+        if lecture[LC.Status.value] == 0:
+            lecture[LC.Status.value] = C.LectureStatus.Lock
+            lecture[LC.PersonNum.value] = lecture[LC.SeatNum()]  # str
         else:
-            lecture["SFKSYY"] = "🈵"
-        lecture["YYRS_HDZRS"] = f'{lecture["YYRS"]}/{lecture["HDZRS"]}'
+            if lecture[LC.ReserveNum()] < seats:
+                lecture[LC.Status.value] = C.LectureStatus.Vacancy
+                available_lectures += 1
+            else:
+                lecture[LC.Status.value] = C.LectureStatus.Full
+            lecture[LC.PersonNum.value] = f"{lecture[LC.ReserveNum()]}/{seats}"
     return lectures, available_lectures
 
 
@@ -35,19 +47,24 @@ def render_table(lectures: List):
     if len(lectures) == 0:
         C.logger.info("❌ No lecture found.")
         return
-    C.logger.info(f"💖 {len(lectures)} lecture(s) were found.")
+    C.logger.info(f"💖 Found {len(lectures)} lecture" + ["s.", "."][len(lectures) == 1])
     # 渲染讲座
     console = Console()
-
     table = Table(show_header=True, header_style="bold magenta")
-    for column in C.Table.columns:
+    # 表头
+    for column in C.Table.columns_name:
         table.add_column(column, justify="center")
-    for lecture in lectures[::-1]:
-        table.add_row(*list(lecture[lc] for lc in C.Table.lecture_column))
+    # 讲座
+    for lecture in lectures:
+        C.logger.debug(lecture)
+        status = lecture[LC.Status.value]
+        props = (lecture[lc] for lc in C.Table.LectureColumns.values()[1:])
+        table.add_row(status.value, *props, style=status.color())
 
     console.print(table)
     console.print(
-        f"[dim i][bold]Link of Lectures:[/bold]\n   {C.URLs.lecture_page}[/dim i]"
+        "[dim i][bold]Link of Lectures:[/bold][/dim i]\n",
+        f"   [dim i]{C.URLs.lecture_page}[/dim i]",
     )
 
 
@@ -85,24 +102,38 @@ def get_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def repeat(times: int, interval: int, session: requests.Session):
+    for i in range(times):
+        if i:  # sleep when i > 0
+            time.sleep(interval)
+        lectures, available_lectures = fetch_lecture_list(session=session)
+        C.logger.info(
+            "发现 %s 个讲座, 其中 %s 个可用. (第 %s/%s 次检查)",
+            len(lectures),
+            available_lectures,
+            i + 1,
+            times,
+        )
+        if available_lectures:
+            call_browser()
+            return
+
+
 if __name__ == "__main__":
     args = get_args()
     C.logger.debug(f"{args=}")
 
     session, student_name = login_ehall(C.username, C.password)
-    if student_name:
-        C.logger.info(f"✨ {'***' if C.privacy_mode else student_name}, Welcome! ✨")
-        if args.repeat:
-            for i in range(args.times):
-                if i:  # sleep when i > 0
-                    time.sleep(args.interval)
-                lectures, available_lectures = fetch_lecture_list(session=session)
-                C.logger.info(
-                    f"发现 {len(lectures)} 个讲座, 其中 {available_lectures} 个可用. (第 {i + 1}/{args.times} 次检查)"
-                )
-                if available_lectures:
-                    call_browser()
-                    break
-        else:
-            lectures, available_lectures = fetch_lecture_list(session=session)
-            render_table(lectures)
+    if not student_name:
+        C.logger.error("❌Login failed. Cannot get student name.")
+        sys.exit(1)
+
+    C.logger.info(f"✨ {'***' if C.privacy_mode else student_name}, Welcome! ✨")
+    if args.repeat:
+        try:
+            repeat(args.times, args.interval, session)
+        except KeyboardInterrupt:
+            logger.info("Terminated by user.")
+    else:
+        lectures, available_lectures = fetch_lecture_list(session=session)
+        render_table(lectures)
