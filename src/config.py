@@ -28,7 +28,7 @@ class Config:
     logger = logger
 
     encrypt_js = "./src/ids-encrypt.js"
-    privacy_mode = False  # set False to display personal information
+    privacy_mode = env("PRIVACY_MODE") == '1'  # set False to display personal information
 
     class URLs:
         login_page = "https://newids.seu.edu.cn/authserver/login"
