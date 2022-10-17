@@ -1,6 +1,6 @@
 [project]
 name = "SEU_Lecture_Monitor"
-version = "0.1.0"
+version = "0.1.2"
 description = "东南大学讲座检查"
 authors = [
     { name = "ZiyuZ", email = "19648091+ZiyuZ@users.noreply.github.com" },
@@ -32,4 +32,4 @@ lecture = 'python ./src/lecture.py'
 web = 'python ./src/call_browser.py'
 
 [tool.pdm.dev-dependencies]
-dev = []
+dev = ["black>=22.10.0"]
