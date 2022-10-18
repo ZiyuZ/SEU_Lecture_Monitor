@@ -1,7 +1,7 @@
 [project]
 name = "SEU_Lecture_Monitor"
-version = "0.1.2"
-description = "东南大学讲座检查"
+version = "1.0.0"
+description = "东南大学讲座数据获取"
 authors = [
     { name = "ZiyuZ", email = "19648091+ZiyuZ@users.noreply.github.com" },
 ]
@@ -28,8 +28,8 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 verify_ssl = true
 name = "pypi"
 [tool.pdm.scripts]
-lecture = 'python ./src/lecture.py'
-web = 'python ./src/call_browser.py'
+lecture = 'python ./src/entry.py'
+web = 'python ./src/entry.py --browser'
 
 [tool.pdm.dev-dependencies]
 dev = ["black>=22.10.0"]

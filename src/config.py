@@ -1,4 +1,5 @@
 import logging
+import re
 import sys
 from enum import Enum
 from pathlib import Path
@@ -41,48 +42,46 @@ class Config:
             "http://ehall.seu.edu.cn/gsapp/sys/jzxxtjapp/hdyy/queryActivityList.do"
         )
 
-    class LectureStatus(Enum):
-        Lock = "🔒"
-        Full = "🛑"
-        Vacancy = "✅"
+    class Lecture:
+        class SubRegex:
+            type = re.compile("人文与科学素养系列讲座[_-]")
+            name = re.compile("【.+】")
+            place = re.compile("（.+）")
 
-        def color(self):
-            return {
-                # self.Lock: "#b3b3b3",
-                self.Vacancy: "#9cff2f",
-                self.Full: "#fa1740",
-            }.get(self)
+        class Status(Enum):
+            Locked = "🔒"
+            Full = "🛑"
+            Vacant = "✅"
+            Disabled = "🚫"
 
-    class Table:
-        columns_name = [
-            "📌",
-            "👥 人数",
-            "🔖 名称",
-            "🏫 地点",
-            "📝 类型",
-            "⏰ 预约时间",
-            "📅 活动时间",
-            # ":studio_microphone: 主讲人",
-        ]
+            def color(self):
+                return {
+                    # self.Lock: "#b3b3b3",
+                    self.Vacant: "#9cff2f",
+                    self.Full: "#fa1740",
+                    self.Disabled: "#b3b3b3",
+                }.get(self)
 
-        class LectureColumns(Enum):
-            Status = "SFKSYY"  # 是否开始预约
-            PersonNum = "YYRS_HDZRS"  # 预约人数/活动总人数
+        class Fields:
+            ID = "WID"
+            LectureStatus = "SFKSYY"  # 是否开始预约
+            PersonNum = "YYRS"  # 预约人数
+            SeatNum = "HDZRS"  # 活动总人数
             Name = "JZMC"  # 讲座名称
             Place = "JZDD"  # 讲座地点
             Type = "JZXL_DISPLAY"  # 讲座系列
             ReserveTime = "YYKSSJ"  # 预约开始时间
             LectureTime = "JZSJ"  # 讲座时间
-            # Presenter =  "ZJR" # 主讲人
+            Introduction = "JZJS"  # 讲座介绍
+            ReleaseStatus = "FBZT"  # 发布状态, -1 表示活动取消
+            Presenter = "ZJR"  # 主讲人
 
-            @classmethod
-            def values(cls):
-                return [v.value for v in cls.__members__.values()]
-
-            @classmethod
-            def ReserveNum(cls):
-                return "YYRS"
-
-            @classmethod
-            def SeatNum(cls):
-                return "HDZRS"
+        render_columns = [
+            "📌",
+            "👥 人数",
+            "🔖 名称",
+            "📍 地点",
+            "📝 类型",
+            "⏰ 预约时间",
+            "📅 活动时间",
+        ]

@@ -1,3 +1,4 @@
+import webbrowser
 from pathlib import Path
 from typing import Tuple
 
@@ -9,9 +10,6 @@ import requests
 from pyquery import PyQuery as pq
 
 from config import Config as C
-
-# from rich.console import Console
-# console = Console()
 
 
 def encrypt(data: str, salt: str) -> str:
@@ -53,3 +51,7 @@ def login_ehall(username: str, password: str) -> Tuple[requests.Session, str]:
     else:
         C.logger.error("认证失败！" + doc("#msg").text())
         return session, ""
+
+
+def call_browser(url=C.URLs.lecture_page):
+    webbrowser.open(url, new=0, autoraise=True)
