@@ -1,6 +1,6 @@
 [project]
 name = "SEU_Lecture_Monitor"
-version = "1.0.0"
+version = "1.0.1"
 description = "东南大学讲座数据获取"
 authors = [
     { name = "ZiyuZ", email = "19648091+ZiyuZ@users.noreply.github.com" },

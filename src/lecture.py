@@ -1,6 +1,6 @@
 import sys
 import time
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import requests
 from rich.console import Console
@@ -108,8 +108,15 @@ class LectureList:
         self.vacant_count = 0
 
     def fetch(self):
-        res = self.session.get(C.URLs.lecture_list)
-        raw_lectures: List[Dict] = res.json()["datas"]
+        C.logger.debug("Fetch lectures")
+        res = self.session.get(C.URLs.lecture_list).json()
+        if res["total"] > res["pageSize"]:
+            C.logger.warn(
+                "🚨 Only got the first %d lectures out of %d.",
+                res["pageSize"],
+                res["total"],
+            )
+        raw_lectures: List[Dict] = res["datas"]
         self.lectures.clear()
         for rl in raw_lectures[::-1]:
             l = Lecture(rl)
@@ -123,6 +130,7 @@ class LectureList:
             self.lectures.append(l)
 
     def render_table(self, with_disabled=False):
+        C.logger.debug("Render table")
         # 没有讲座时直接返回
         count = len(self.lectures)
         if count == 0:
@@ -141,8 +149,7 @@ class LectureList:
             if lecture.is_disabled() and not with_disabled:
                 C.logger.debug("Current lecture is disabled, skip.")
                 continue
-            status = lecture.status
-            table.add_row(status.value, *lecture.table_format(), style=status.color())
+            table.add_row(*lecture.table_format(), style=lecture.status.color())
 
         console.print(table)
         console.print(
